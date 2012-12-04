@@ -16,14 +16,14 @@ int main(int argc, char **argv) {
 	strcat(name, ".c");
 	FILE *file = fopen(name, "a+");
 	assert(file);
-	assert(fputs("#include <stdio.h>\nint main(int argc, char **argv) { ", file) != EOF);
+	assert(fputs("#include <stdlib.h>\n#include <stdio.h>\nint main(int argc, char **argv) { ", file) != EOF);
 	char text[1024];
 	while(fgets(text, sizeof(text), stdin)) fputs(text, file);
 	fputs("}\n", file);
 	rewind(file);
 	pid_t pid = fork();
 	assert(pid != -1);
-	if(!pid) assert(execlp("c99", "c99", name, 0) != -1);
+	if(!pid) assert(execlp("c99", "c99", "-O3", name, 0) != -1);
 	int code;
 	assert(wait(&code) == pid && !code);
 	assert(remove(name) != -1);

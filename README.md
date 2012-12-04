@@ -1,4 +1,8 @@
-Armada is the missing utility for C99 one-liners.
+## Installation
+
+	$ git clone https://github.com/claerhout/armada.git
+	$ cd armada
+	$ sudo c99 -O3 armada.c -o /usr/local/bin/armada
 
 ## Usage
 

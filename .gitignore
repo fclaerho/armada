@@ -1,5 +1,4 @@
 *.o
-*.pyc
 *.dSYM
 *.DS_Store
 

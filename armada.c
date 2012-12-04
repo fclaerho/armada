@@ -1,64 +1,36 @@
 /* Copyright (c) 2012 f.claerhout, licensed under the GPL */
 
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-char* cc[] = {"cc", "-x", "c", "-std=c99", "-c", "-", 0};
-char* nl[] = {"nl", 0};
+#ifdef NDEBUG
+	#error Assertions cannot be disabled. Undefine NDEBUG and try again.
+#endif
 
-void run(char* cmd[], FILE *source) {
+int main(int argc, char **argv) {
+	char name[L_tmpnam + 2];
+	assert(tmpnam(name));
+	strcat(name, ".c");
+	FILE *file = fopen(name, "a+");
+	assert(file);
+	assert(fputs("#include <stdio.h>\nint main(int argc, char **argv) { ", file) != EOF);
+	char text[1024];
+	while(fgets(text, sizeof(text), stdin)) fputs(text, file);
+	fputs("}\n", file);
+	rewind(file);
 	pid_t pid = fork();
-	switch(pid) {
-		case -1:
-			perror("fork() failed");
-			abort();
-		case 0:
-			if(dup2(fileno(source), STDIN_FILENO) == -1) { // set source as stdin
-				perror("dup2() failed");
-				abort();
-			}
-			rewind(source);
-			execvp(cmd[0], cmd);
-			perror("execvp() failed");
-			abort();
-		default:
-			(void)waitpid(pid, 0, 0);
-	}
-}
-
-void history(void) {
-	fprintf(stderr, "base=%i, current=%i, total=%i\n", history_base, where_history(), history_length);
-	//for(HIST_ENTRY *entry = current_history(); entry; entry = next_history()) {
-	for(int i = 0; i < history_length; ++i) {
-		HIST_ENTRY *entry = history_get(history_base - 1 + i);
-		if(entry) fprintf(stderr, "%i: %s\n", i, entry->line);
-		else fprintf(stderr, "%i: no entry\n", i);
-	}
-}
-
-int main(void) {
-	const char *prompt = "armada> ";
-	FILE *source = tmpfile();
-	setvbuf(source, 0, _IONBF, 0); /* disable buffering */
-	for(;;) {
-		char *line = readline(prompt);
-		assert(line);
-		if(!strcmp(line, "quit")) break;
-		add_history(line);
-		history();
-		if(!strcmp(line, "list")) run(nl, source);
-		else if(!strcmp(line, "history")) history();
-		else if(!strcmp(line, "droptop")) remove_history(0);
-		else {
-			fprintf(source, "%s\n", line);
-			//run(cc, source);
-		}
-		//free(line);
-	}
+	assert(pid != -1);
+	if(!pid) assert(execlp("c99", "c99", name, 0) != -1);
+	int code;
+	assert(wait(&code) == pid && !code);
+	assert(remove(name) != -1);
+	pid = fork();
+	assert(pid != -1);
+	if(!pid) assert(execvp("./a.out", argv) != -1);
+	assert(wait(&code) == pid);
+	assert(remove("./a.out") != -1);
+	return code;
 }

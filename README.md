@@ -18,9 +18,20 @@ Armada exits with the exit status of the hosted code, or EXIT_FAILURE if any ope
 	$ echo $?
 	42
 
+### LIBRARY
+
+As both the C99 standard library and posix API are too low-level to write compact code, Armada is shipped with its own library.
+
+* ite* str(const char *fmt, ...)
+* ite* glob(const char *pattern)
+* void echo(ite*);
+* ite* next(ite*);
+
+Under work...
+
 ### REQUIREMENT
 
-A posix-compliant installation.
+A posix-compliant platform.
 Armada uses your local **c99** command and you'll need **make** for the installation.
 
 ### INSTALLATION

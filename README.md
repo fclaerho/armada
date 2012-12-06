@@ -20,12 +20,13 @@ Armada exits with the exit status of the hosted code, or EXIT_FAILURE if any ope
 
 ### LIBRARY
 
-As both the C99 standard library and posix API are too low-level to write compact code, Armada is shipped with its own library.
+As both the C99 standard library and posix API are too low-level to write compact code, Armada is shipped with its own.
+Its core type is an iterator and all constructors return one.
 
-* ite* str(const char *fmt, ...)
-* ite* glob(const char *pattern)
-* void echo(ite*);
-* ite* next(ite*);
+* ite* str(const char *fmt, ...), returns a singleton containing the string interpolation;
+* ite* glob(const char *pattern), return an iterator to a list of filenames;
+* void next(ite* *), fetch the next entry in the list, the current entry is released;
+* void echo(ite*), output (and release) the list;
 
 Under work...
 

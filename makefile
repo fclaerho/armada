@@ -5,7 +5,7 @@ test: armada
 	echo 'return 42;' | ./armada || true
 	echo 'puts("foo");' | ./armada | xargs test foo =
 	echo 'puts(argv[1]);' | ./armada bar | xargs test bar =
-	echo 'for(ite *i = str("baz%i", 42); i; i = next(i)) puts(i->val);' | ./armada | xargs test baz42 =
+	echo 'for(ite *i = str("baz%i", 42); i; next(&i)) puts(i->val);' | ./armada | xargs test baz42 =
 	echo 'echo(str("foo"));' | ./armada | xargs test '(foo)' =
 	echo 'echo(glob("."));' | ./armada | xargs -I% test '(.DS_Store, .git, .gitignore, a.out, armada, armada.c, armada.dSYM, makefile, README.md)' = "%"
 

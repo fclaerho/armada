@@ -4,26 +4,25 @@
 	$ cd armada
 	$ sudo c99 -O3 armada.c -o /usr/local/bin/armada
 
-## SYNOPSIS
+* * *
+
+### SYNOPSIS
 
 	armada ...
 
-## DESCRIPTION
+### DESCRIPTION
 
 Armada compiles and run C99 statements from stdin,
 any command line option is forwarded to the hosted code.
 
-## EXIT STATUS
+### EXIT STATUS
 
 Armada exits with the hosted code exit status or 0 if any operation preceeding the hosted code execution fails.
 
-## EXAMPLE
+### EXAMPLE
 
 	$ echo 'printf("hello %s", argv[1]); return 42;' | armada world
 	hello world
 	$ echo $?
 	42
-
-## REQUIREMENTS
-
-A posix-compliant system (Armada uses the c99 utility).
+	

@@ -18,6 +18,11 @@ Armada exits with the hosted code exit status or EXIT_FAILURE if any operation p
 	$ echo $?
 	42
 
+### REQUIREMENT
+
+A posix-compliant installation.
+Armada uses your local **c99** command and you'll need **make** for the installation.
+
 ### INSTALLATION
 
 	$ git clone https://github.com/claerhout/armada.git

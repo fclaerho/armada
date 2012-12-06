@@ -18,8 +18,62 @@ void rmsrc(void) { (void)remove(name); }
 void rmobj(void) { (void)remove("a.out"); }
 
 const char header[] =
+	"#include <string.h>\n"
+	"#include <stdarg.h>\n"
 	"#include <stdlib.h>\n"
 	"#include <stdio.h>\n"
+#ifndef PUREC99
+	"#include <dirent.h>\n"
+	"#include <libgen.h>\n"
+	"typedef const struct ite {\n"
+	"	struct ite *next;\n"
+	"	char *val;\n"
+	"} ite;\n"
+	"ite* next(ite *i) {\n"
+	"	ite *j = i? i->next: 0;\n"
+	"	if(i) free((void*)i);\n"
+	"	return j;\n"
+	"}\n"
+	"void test(_Bool b) {\n"
+	"	if(b) return;\n"
+	"	perror(0);\n"
+	"	exit(EXIT_FAILURE);\n"
+	"}\n"
+	"struct ite* append(struct ite *i, const char *s) {\n"
+	"	struct ite *j;\n"
+	"	for(j = i; j && j->next; j = j->next);\n"
+	"	struct ite *k = malloc(sizeof(ite) + strlen(s) + 1);\n"
+	"	test(k);\n"
+	"	if(j) j->next = k;\n"
+	"	k->val = (char*)(k + 1);\n"
+	"	strcpy(k->val, s);\n"
+	"	return i? i: k;"
+	"}\n"
+	"ite* str(const char *fmt, ...) {\n"
+	"	va_list lst, cpy;\n"
+	"	va_start(lst, fmt);\n"
+	"	va_copy(cpy, lst);\n"
+	"	size_t len = vsnprintf(0, 0, fmt, lst);\n"
+	"	va_end(lst);\n"
+	"	char buf[len + 1];\n"
+	"	(void)vsnprintf(buf, len + 1, fmt, cpy);\n"
+	"	va_end(cpy);\n"
+	"	return append(0, buf);"
+	"}\n"
+	"ite* glob(char *pattern) {\n"
+	"	DIR *dir = opendir(basename(pattern));\n"
+	"	struct ite *i = 0;\n"
+	"	for(struct dirent *e = readdir(dir); e; e = readdir(dir)) {\n"
+	"		if(strcmp(e->d_name, \".\") && strcmp(e->d_name, \"..\")) i = append(i, e->d_name);\n"
+	"	}\n"
+	"	return i;\n"
+	"}\n"
+	"void echo(ite *i) {\n"
+	"	fputs(\"(\", stdout);\n"
+	"	for(; i; i = i->next) fprintf(stdout, \"%s%s\", i->val, i->next?\", \":\"\");\n"
+	"	fputs(\")\\n\", stdout);\n"
+	"}\n"
+#endif
 	"int main(int argc, char **argv) { ";
 
 int main(int argc, char **argv) {
@@ -27,7 +81,7 @@ int main(int argc, char **argv) {
 	(void)strcat(name, ".c");
 	FILE *file = fopen(name, "a+");
 	test(file);
-	atexit(rmsrc);
+	//atexit(rmsrc);
 	test(fputs(header, file) != EOF);
 	char text[1024];
 	while(fgets(text, sizeof(text), stdin)) test(fputs(text, file) != EOF);

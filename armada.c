@@ -17,13 +17,18 @@ void rmsrc(void) { (void)remove(name); }
 
 void rmobj(void) { (void)remove("a.out"); }
 
+const char header[] =
+	"#include <stdlib.h>\n"
+	"#include <stdio.h>\n"
+	"int main(int argc, char **argv) { ";
+
 int main(int argc, char **argv) {
 	test(tmpnam(name));
 	(void)strcat(name, ".c");
 	FILE *file = fopen(name, "a+");
 	test(file);
 	atexit(rmsrc);
-	test(fputs("#include <stdlib.h>\n#include <stdio.h>\nint main(int argc, char **argv) { ", file) != EOF);
+	test(fputs(header, file) != EOF);
 	char text[1024];
 	while(fgets(text, sizeof(text), stdin)) test(fputs(text, file) != EOF);
 	test(fputs("}\n", file) != EOF);

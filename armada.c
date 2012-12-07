@@ -80,7 +80,7 @@ const char builtins[] =
 	"	return j;\n"
 	"}\n"
 	"char* index(ite *i, size_t at) {\n"
-	"	while(i && at--) i = i->next;
+	"	while(i && at--) i = i->next;\n"
 	"	return i->val;\n"
 	"}\n"
 	"void echo(ite *i) {\n"

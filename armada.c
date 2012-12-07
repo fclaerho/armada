@@ -9,10 +9,7 @@
 #include <errno.h>
 
 void test(_Bool b) {
-	if(b) {
-		errno = 0;
-		return;
-	}
+	if(b) return;
 	perror("fatal");
 	exit(EXIT_FAILURE);
 }

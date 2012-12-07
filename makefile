@@ -9,6 +9,7 @@ test: armada
 	echo 'echo(str("foo"));' | ./armada | xargs test '(foo)' =
 	-echo 'echo(glob("."));' | ./armada | xargs -I% test '(.DS_Store, .git, .gitignore, a.out, armada, armada.c, armada.dSYM, makefile, README.md)' = "%"
 	echo 'echo(mkite(argv));' | ./armada a b c | xargs -I% test '(./armada, a, b, c)' = '%'
+	echo 'puts(index(mkite(argv), 0));' | ./armada a b c | xargs -I% test './armada' = '%'
 
 armada: armada.c
 	c99 -O3 $< -o $@

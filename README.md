@@ -18,7 +18,7 @@ Armada exits with the exit status of the hosted code, or EXIT_FAILURE if any ope
 	$ echo $?
 	42
 
-### LIBRARY
+### BUILT-IN FUNCTIONS
 
 As both the C99 standard library and posix API are too low-level to write compact code, Armada is shipped with its own.
 Its core type is an iterator and all constructors return one.

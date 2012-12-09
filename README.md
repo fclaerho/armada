@@ -9,7 +9,8 @@ any command line option is forwarded to the hosted code.
 
 ### EXIT STATUS
 
-Armada exits with the exit status of the hosted code, or EXIT_FAILURE if any operation preceeding its execution fails.
+Armada exits with the exit status of the hosted code, or 1 if any operation preceeding its execution fails.
+Armada raises any uncaught signal during the hosted code execution.
 
 ### EXAMPLE
 

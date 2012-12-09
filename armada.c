@@ -2,6 +2,7 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
@@ -9,8 +10,8 @@
 #include <errno.h>
 
 void test(_Bool b) {
-	if(b) return;
-	perror("fatal");
+	if(b) { errno = 0; return; }
+	perror("internal");
 	exit(EXIT_FAILURE);
 }
 
@@ -21,28 +22,13 @@ void rmsrc(void) { (void)remove(name); }
 void rmobj(void) { (void)remove("a.out"); }
 
 const char builtins[] =
+	"#include <assert.h>\n"
 	"#include <string.h>\n"
 	"#include <stdarg.h>\n"
 	"#include <stdlib.h>\n"
 	"#include <stdio.h>\n"
 	"#include <dirent.h>\n"
 	"#include <libgen.h>\n"
-	"void test(_Bool b) {"
-	"	if(b) return;"
-	"	perror(0);"
-	"	exit(EXIT_FAILURE);"
-	"}"
-	"char* str(const char *fmt, ...) {"
-	"	va_list lst, cpy;"
-	"	va_start(lst, fmt);"
-	"	va_copy(cpy, lst);"
-	"	size_t len = vsnprintf(0, 0, fmt, lst);"
-	"	va_end(lst);"
-	"	char *buf = malloc(len + 1);"
-	"	(void)vsnprintf(buf, len + 1, fmt, cpy);"
-	"	va_end(cpy);"
-	"	return buf;"
-	"}"
 	"typedef const struct ite {"
 	"	struct ite *next;"
 	"	char *val;"
@@ -51,31 +37,45 @@ const char builtins[] =
 	"	struct ite *j;"
 	"	for(j = i; j && j->next; j = j->next);"
 	"	struct ite *k = malloc(sizeof(ite));"
-	"	test(k);"
+	"	assert(k);"
 	"	if(j) j->next = k;"
 	"	k->val = strdup(s);"
-	"	test(k->val);"
-	"	strcpy(k->val, s);"
+	"	assert(k->val);"
 	"	return i? i: k;"
 	"}"
+	"ite* mkite(char **argv) {\n"
+	"	struct ite *i = 0;\n"
+	"	for(; *argv; ++argv) i = push(i, *argv);\n"
+	"	return i;\n"
+	"}\n"
+	"ite* mkitev(char *s, ...) {"
+	"	struct ite *i = 0;"
+	"	va_list list;"
+	"	va_start(list, s);"
+	"	for(; s; s = va_arg(list, char*)) i = push(i, s);"
+	"	va_end(list);"
+	"	return i;"
+	"}\n"
 	"ite* shift(ite *i) {"
 	"	ite *j = i? i->next: 0;"
 	"	if(i) free((void*)i);"
 	"	return j;"
 	"}"
 	"ite* split(const char *s, const char *sep) {"
-	"	char *cpy = strdup(s), *cur = cpy;"
+	"	char *cpy = strdup(s);"
+	"	assert(cpy);"
+	"	char *cur = cpy;"
 	"	struct ite *i = 0;"
 	"	while(cur) i = push(i, strsep(&cur, sep));"
 	"	free(cpy);"
 	"	return i;"
 	"}"
 	"char* join(const char *sep, ite *i) {"
-	"	char *buf = strdup(\"\");"
+	"	char *buf = 0;"
 	"	for(; i; i = i->next) {"
-	"		char *tmp = str(\"%s%s%s\", buf, i->val, i->next? sep: \"\");"
-	"		free(buf);"
-	"		buf = tmp;"
+	"		buf =  realloc(buf, (buf? strlen(buf): 0) + strlen(i->val) + strlen(sep) + 1);"
+	"		strcat(buf, i->val);"
+	"		if(i->next) strcat(buf, sep);"
 	"	}"
 	"	return buf;"
 	"}"
@@ -84,23 +84,18 @@ const char builtins[] =
 	"	for(; i; i = i->next) ++c;"
 	"	return c;"
 	"}"
-	"_Bool match(char *s, char *pattern) {\n"
-	"	return 1;\n"
+	"_Bool match(char *s, char *t) { /* IOCCC 2001 schweikh */"
+	"	return *t-'*'?*s?'?'==*t|*s==*t&&match(s+1,t+1):!*t:match(s,t+1)||*s&&match(s+1,t);"
 	"}\n"
 	"ite* glob(char *pattern) {\n"
-	"	DIR *dir = opendir(dirname(pattern));\n"
-	"	struct ite *i = 0;\n"
-	"	for(struct dirent *e = readdir(dir); e; e = readdir(dir)) {\n"
-	"		if(strcmp(e->d_name, \".\")\n"
-	"		&& strcmp(e->d_name, \"..\")\n"
-	"		&& match(e->d_name, basename(pattern))) i = push(i, e->d_name);\n"
-	"	}\n"
-	"	return i;\n"
-	"}\n"
-	"ite* mkite(char **argv) {\n"
-	"	struct ite *i = 0;\n"
-	"	for(; *argv; ++argv) i = push(i, *argv);\n"
-	"	return i;\n"
+	"	DIR *dir = opendir(dirname(pattern));"
+	"	struct ite *i = 0;"
+	"	for(struct dirent *e = readdir(dir); e; e = readdir(dir)) {"
+	"		if(strcmp(e->d_name, \".\")"
+	"		&& strcmp(e->d_name, \"..\")"
+	"		&& match(e->d_name, basename(pattern))) i = push(i, e->d_name);"
+	"	}"
+	"	return i;"
 	"}\n"
 	"ite* slice(ite *i, size_t min, size_t max) {\n"
 	"	struct ite *j = 0;\n"
@@ -118,8 +113,8 @@ int main(int argc, char **argv) {
 	(void)strcat(name, ".c");
 	FILE *file = fopen(name, "a+");
 	test(file);
-	atexit(rmsrc); /* comment out this line to keep the source file */
-	test(fputs(builtins, file) != EOF); /* comment out this line if you don't want the builtins */
+	atexit(rmsrc);
+	test(fputs(builtins, file) != EOF);
 	test(fputs("int main(int argc, char **argv) { ", file) != EOF);
 	char text[1024];
 	while(fgets(text, sizeof(text), stdin)) test(fputs(text, file) != EOF);
@@ -136,7 +131,7 @@ int main(int argc, char **argv) {
 	test(pid != -1);
 	if(!pid) test(execvp("./a.out", argv) != -1);
 	test(wait(&stat) != -1);
+	if(WIFSIGNALED(stat)) raise(WTERMSIG(stat));
 	test(WIFEXITED(stat));
 	return WEXITSTATUS(stat);
 }
-

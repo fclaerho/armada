@@ -2,18 +2,12 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <signal.h>
+#include <assert.h>
 #include <unistd.h>
+#include <signal.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <errno.h>
-
-void test(_Bool b) {
-	if(b) { errno = 0; return; }
-	perror("internal");
-	exit(EXIT_FAILURE);
-}
 
 char name[L_tmpnam + 2];
 
@@ -109,29 +103,29 @@ const char builtins[] =
 	"}\n";
 
 int main(int argc, char **argv) {
-	test(tmpnam(name));
+	assert(tmpnam(name));
 	(void)strcat(name, ".c");
 	FILE *file = fopen(name, "a+");
-	test(file);
+	assert(file);
 	atexit(rmsrc);
-	test(fputs(builtins, file) != EOF);
-	test(fputs("int main(int argc, char **argv) { ", file) != EOF);
+	assert(fputs(builtins, file) != EOF);
+	assert(fputs("int main(int argc, char **argv) { ", file) != EOF);
 	char text[1024];
-	while(fgets(text, sizeof(text), stdin)) test(fputs(text, file) != EOF);
-	test(fputs("}\n", file) != EOF);
+	while(fgets(text, sizeof(text), stdin)) assert(fputs(text, file) != EOF);
+	assert(fputs("}\n", file) != EOF);
 	rewind(file);
 	pid_t pid = fork();
-	test(pid != -1);
-	if(!pid) test(execlp("c99", "c99", "-O3", name, 0) != -1);
+	assert(pid != -1);
+	if(!pid) assert(execlp("c99", "c99", "-O3", name, 0) != -1);
 	int stat;
-	test(wait(&stat) != -1);
-	test(WIFEXITED(stat) && !WEXITSTATUS(stat));
+	assert(wait(&stat) != -1);
+	assert(WIFEXITED(stat) && !WEXITSTATUS(stat));
 	atexit(rmobj);
 	pid = fork();
-	test(pid != -1);
-	if(!pid) test(execvp("./a.out", argv) != -1);
-	test(wait(&stat) != -1);
+	assert(pid != -1);
+	if(!pid) assert(execvp("./a.out", argv) != -1);
+	assert(wait(&stat) != -1);
 	if(WIFSIGNALED(stat)) raise(WTERMSIG(stat));
-	test(WIFEXITED(stat));
+	assert(WIFEXITED(stat));
 	return WEXITSTATUS(stat);
 }

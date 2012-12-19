@@ -19,24 +19,10 @@ Armada raises any uncaught signal during the hosted code execution.
 	$ echo $?
 	42
 
-### BUILT-IN FUNCTIONS
-
-As both the C99 standard library and posix API are too low-level to write compact code, Armada is shipped with its own.
-Its core type is an immutable iterator (ite*).
-
-* ite* mkite(char**)
-* ite* mvitev(char*, .../*0*/)
-* ite* split(const char*, const char *sep);
-* char* join(const char \*sep, ite*);
-* ite* glob(const char *pattern), return an iterator to a list of filenames;
-* ite* push(ite*, const char*);
-* ite* shift(ite*), free the current entry and fetch the next one;
-* void echo(ite*), output the list;
-
 ### REQUIREMENT
 
 A posix-compliant platform.
-Armada uses your local **c99** command and you'll need **make** for the installation.
+Armada uses your local **c99** compiler and you'll need **make** for the installation.
 
 ### INSTALLATION
 

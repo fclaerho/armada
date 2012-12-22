@@ -8,7 +8,7 @@ Armada compiles and run C99 statements from stdin,
 any command line option is forwarded to the hosted code.
 
 Neither the standard library nor the posix API allow to write compact code,
-Armada therefore allows you to customize its behavior throught two environment variables:
+Armada therefore allows you to customize its behavior by using two environment variables:
   * ARMADA_INCLUDE to override the code preceeding main() (defaults to include string.h, stdlib.h, stdio.h and math.h);
   * ARMADA_CFLAGS to override compilation options (defaults to -O3).
 

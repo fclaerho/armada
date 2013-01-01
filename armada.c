@@ -1,4 +1,10 @@
-/* Copyright (c) dec. 2012 f.claerhout, licensed under the GPL */
+/*                         _      
+ *  __ _ _ _ _ __  __ _ __| |__ _ 
+ * / _` | '_| '  \/ _` / _` / _` |
+ * \__,_|_| |_|_|_\__,_\__,_\__,_|
+ * Your C99 one-liner.
+ * Copyright (c) 2012 f.claerhout, licensed under the GPL.
+ */
 
 #include <assert.h>
 #include <string.h>

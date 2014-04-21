@@ -3,7 +3,7 @@
  * / _` | '_| '  \/ _` / _` / _` |
  * \__,_|_| |_|_|_\__,_\__,_\__,_|
  * Your C99 one-liner utility.
- * Copyright (c) 2012 f.claerhout, licensed under the GPL.
+ * Copyright (c) 2012-2014 f.claerhout, licensed under the GPL.
  */
 
 #include <assert.h>
@@ -16,7 +16,8 @@
 	#error Assertions cannot be disabled, please undefine NDEBUG.
 #endif
 
-char srcname[L_tmpnam + 2], objname[L_tmpnam];
+char srcname[L_tmpnam + 2] = "./temp.XXXXXX";
+char objname[L_tmpnam] = "./temp.XXXXXX";
 
 void rmsrc(void) { (void)remove(srcname); }
 
@@ -38,19 +39,24 @@ int shell(const char *fmt, ...) {
 }
 
 int main(int argc, char **argv) {
-	assert(tmpnam(srcname));
-	(void)strcat(srcname, ".c");
+	assert(mktemp(srcname));
+	assert(strcat(srcname, ".c"));
 	FILE *srcfile = fopen(srcname, "a+");
 	assert(srcfile);
 	atexit(rmsrc);
-	assert(setenv("ARMADA_INCLUDE", "#include <string.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <math.h>\n", 0) != -1);
+	assert(setenv(
+		"ARMADA_INCLUDE",
+		"#include <string.h>\n"
+		"#include <stdlib.h>\n"
+		"#include <stdio.h>\n"
+		"#include <math.h>\n", 0) != -1);
 	assert(fputs(getenv("ARMADA_INCLUDE"), srcfile) != EOF);
 	assert(fputs("int main(int argc, char **argv) { ", srcfile) != EOF);
 	char text[1024];
 	while(fgets(text, sizeof(text), stdin)) assert(fputs(text, srcfile) != EOF);
 	assert(fputs("}\n", srcfile) != EOF);
 	rewind(srcfile);
-	assert(tmpnam(objname));
+	assert(mktemp(objname));
 	assert(setenv("ARMADA_CFLAGS", "-O3", 0) != -1);
 	assert(!shell("c99 %s -o %s %s", getenv("ARMADA_CFLAGS"), objname, srcname));
 	atexit(rmobj);

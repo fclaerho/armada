@@ -34,7 +34,7 @@ you'll need the c99 posix command and a posix-compliant make.
 
 ### INSTALLATION
 
-	$ git clone git://fclaerhout.fr/armada.git
+	$ git clone <somewhere>/armada.git
 	$ sudo make -C armada install
 
 ### DE-INSTALLATION

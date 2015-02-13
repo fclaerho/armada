@@ -1,5 +1,3 @@
-[![Build Status](https://secure.travis-ci.org/fclaerho/armada.png?branch=master)](http://travis-ci.org/fclaerho/armada)
-
 ### SYNOPSIS
 
 	armada ...

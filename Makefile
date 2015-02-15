@@ -14,8 +14,8 @@ test: armada
 armada: armada.c
 	c99 -O3 $< -o $@
 
-clean: armada
-	-rm -fr $< *.dSYM
+clean:
+	-rm -fr armada *.dSYM
 
 install: test
 	mv armada $(BINPATH)

@@ -1,8 +1,10 @@
-**SYNOPSIS**
+SYNOPSIS
+--------
 
 	armada ...
 
-**DESCRIPTION**
+DESCRIPTION
+-----------
 
 Armada compiles and run C99 statements from stdin,
 any command line option is forwarded to the hosted code.
@@ -13,30 +15,35 @@ Armada therefore allows you to customize its behavior by using two environment v
     defaults to include string.h, stdlib.h, stdio.h and math.h;
   * ARMADA_CFLAGS to override compilation options (defaults to -O3).
 
-**EXIT STATUS**
+EXIT STATUS
+-----------
 
 Armada exits with the exit status of the hosted code,
 or 1 if any operation preceding its execution fails.
 
-**EXAMPLE**
+EXAMPLE
+-------
 
 	$ echo 'printf("hello %s", argv[1]); return 42;' | armada world
 	hello world
 	$ echo $?
 	42
 
-**REQUIREMENT**
+REQUIREMENT
+-----------
 
 Armada uses the posix **c99** command internally to compile the hosted code.
 
 If you use the provided makefile to install Armada,
 you'll need the c99 posix command and a posix-compliant make.
 
-**INSTALLATION**
+INSTALLATION
+------------
 
 	$ git clone <somewhere>/armada.git
 	$ sudo make -C armada install
 
-**DE-INSTALLATION**
+DE-INSTALLATION
+---------------
 
 	$ sudo make -C armada uninstall
